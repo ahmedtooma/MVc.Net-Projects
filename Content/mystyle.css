@@ -1,0 +1,69 @@
+﻿@font-face{
+    font-family:myfontt;
+    src:url('font/TanseekModernProArabic-Bold3.ttf')
+}
+@font-face {
+    font-family: 'TanseekModernProArabic-Bold3';
+    src: url('../font/TanseekModernProArabic-Bold3.ttf') format('truetype');
+}
+
+
+@font-face{
+    font-family:myfont2;
+    src:url('font/DroidKufi-Regular.ttf')
+}
+
+
+.navbar-default {
+    background-color: #0c5c82;
+    border-color: #e7e7e7;
+    height:70px;
+    padding-top:10px;
+}
+
+
+.navbar-default .navbar-nav>li>a {
+    color: #e7e7e7;
+    font-family:TanseekModernProArabic-Bold3;
+}
+
+.navbar-default .navbar-nav>li>a:hover {
+    color: #fff;
+  
+}
+
+
+.nav > li{
+
+    position:relative;
+        display:block;
+        height:75px;
+        padding-top:10px;
+}
+
+.myfooter {
+  background-color:cornflowerblue; 
+  padding:10px;
+    font-family:TanseekModernProArabic-Bold3;
+    text-align:justify;
+}
+
+
+
+
+.subfooter{
+
+       background-color:darkblue;
+       color:white;
+      padding:10px;
+       text-align:center;
+
+}
+.myfooter a {
+    color:azure;
+}
+.myfooter h3, ul, p {
+    margin-bottom: 20px;
+    font-family: TanseekModernProArabic-Bold3;
+    list-style-type: none;
+}
