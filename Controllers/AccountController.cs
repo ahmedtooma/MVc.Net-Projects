@@ -8,18 +8,20 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
-using JobFindsDemo.Models;
+using jobaffair.Models;
 
-namespace JobFindsDemo.Controllers
+namespace jobaffair.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationDbContext db;
 
         public AccountController()
         {
+            db = new ApplicationDbContext();
         }
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
@@ -75,7 +77,7 @@ namespace JobFindsDemo.Controllers
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            var result = await SignInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -133,12 +135,16 @@ namespace JobFindsDemo.Controllers
                     return View(model);
             }
         }
+        
+
+
 
         //
         // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
         {
+            ViewBag.UserType = new SelectList (db.Roles.Where(a=> !a.Name.Contains("administrator")).ToList(), "Name", "Name");
             return View();
         }
 
@@ -151,18 +157,19 @@ namespace JobFindsDemo.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                ViewBag.UserType = new SelectList(db.Roles.Where(a => !a.Name.Contains("administrator")).ToList(), "Name","Name");
+                var user = new ApplicationUser { UserName = model.Username, Email = model.Email ,UserType=model.UserType  };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
+                    await UserManager.AddToRoleAsync(user.Id, model.UserType);
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
@@ -170,6 +177,44 @@ namespace JobFindsDemo.Controllers
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+       
+        public ActionResult EditProfile()
+        {
+            var userId = User.Identity.GetUserId();
+            var user = db.Users.Where(a => a.Id == userId).SingleOrDefault();
+            EditProfileViewModel profile = new EditProfileViewModel();
+            profile.Username = user.UserName;
+            profile.Email = user.Email;
+
+            return View(profile);
+        }
+
+        [HttpPost]
+        public ActionResult EditProfile(EditProfileViewModel profile)
+        {
+
+            var userId = User.Identity.GetUserId();
+            var Currentuser = db.Users.Where(a => a.Id == userId).SingleOrDefault();
+            if(!UserManager.CheckPassword(Currentuser, profile.CurrentPassword))
+            {
+
+                ViewBag.Message = "كلمة المرور الحالية غير صحيحة";
+            }
+            else
+            {
+              var newhashpassword=  UserManager.PasswordHasher.HashPassword(profile.NewPassword);
+                Currentuser.UserName = profile.Username;
+                Currentuser.Email = profile.Email;
+                Currentuser.PasswordHash =newhashpassword;
+                db.Entry(Currentuser).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                ViewBag.Message = "تم التحديث بنجاح";
+                
+            }
+
+
+            return View(profile);
         }
 
         //

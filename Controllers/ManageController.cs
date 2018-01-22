@@ -6,9 +6,9 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
-using JobFindsDemo.Models;
+using jobaffair.Models;
 
-namespace JobFindsDemo.Controllers
+namespace jobaffair.Controllers
 {
     [Authorize]
     public class ManageController : Controller
